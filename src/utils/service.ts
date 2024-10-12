@@ -63,7 +63,7 @@ function createService() {
           error.message = "拒绝访问"
           break
         case 404:
-          error.message = "请求地址出错"
+          error.message = "404,请求地址不存在"
           break
         case 408:
           error.message = "请求超时"
@@ -103,7 +103,7 @@ function createRequest(service: AxiosInstance) {
     const defaultConfig = {
       headers: {
         // 携带 Token
-        Authorization: token ? `Bearer ${token}` : undefined,
+        Authorization: token ? `${token}` : undefined,
         "Content-Type": "application/json"
       },
       timeout: 5000,

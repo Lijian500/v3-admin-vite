@@ -18,15 +18,19 @@ const { paginationData, handleCurrentChange, handleSizeChange } = usePagination(
 //#region 增
 const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   id: undefined,
-  username: "",
-  password: ""
+  realName: "",
+  account: "",
+  identity: 1,
+  pwd: ""
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 const formData = ref<CreateOrUpdateTableRequestData>(cloneDeep(DEFAULT_FORM_DATA))
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
-  username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
-  password: [{ required: true, trigger: "blur", message: "请输入密码" }]
+  account: [{ required: true, trigger: "blur", message: "请输入用户名" }],
+  realName: [{ required: true, trigger: "blur", message: "请输入真实姓名" }],
+  identity: [{ required: true, trigger: "blur", message: "请选择身份" }],
+  pwd: [{ required: true, trigger: "blur", message: "请输入密码" }]
 }
 const handleCreateOrUpdate = () => {
   formRef.value?.validate((valid: boolean, fields) => {
@@ -52,7 +56,7 @@ const resetForm = () => {
 
 //#region 删
 const handleDelete = (row: TableData) => {
-  ElMessageBox.confirm(`正在删除用户：${row.username}，确认删除？`, "提示", {
+  ElMessageBox.confirm(`正在删除用户：${row.account}，确认删除？`, "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning"
@@ -76,20 +80,20 @@ const handleUpdate = (row: TableData) => {
 const tableData = ref<TableData[]>([])
 const searchFormRef = ref<FormInstance | null>(null)
 const searchData = reactive({
-  username: "",
-  phone: ""
+  account: "",
+  realName: ""
 })
 const getTableData = () => {
   loading.value = true
   getTableDataApi({
-    currentPage: paginationData.currentPage,
-    size: paginationData.pageSize,
-    username: searchData.username || undefined,
-    phone: searchData.phone || undefined
+    pageNo: paginationData.pageNo,
+    pageSize: paginationData.pageSize,
+    account: searchData.account || undefined,
+    realName: searchData.realName || undefined
   })
-    .then(({ data }) => {
-      paginationData.total = data.total
-      tableData.value = data.list
+    .then(res => {
+      paginationData.total = res.total
+      tableData.value = res.data
     })
     .catch(() => {
       tableData.value = []
@@ -99,7 +103,7 @@ const getTableData = () => {
     })
 }
 const handleSearch = () => {
-  paginationData.currentPage === 1 ? getTableData() : (paginationData.currentPage = 1)
+  paginationData.pageNo === 1 ? getTableData() : (paginationData.pageNo = 1)
 }
 const resetSearch = () => {
   searchFormRef.value?.resetFields()
@@ -108,18 +112,18 @@ const resetSearch = () => {
 //#endregion
 
 /** 监听分页参数的变化 */
-watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
+watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData, { immediate: true })
 </script>
 
 <template>
   <div class="app-container">
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="searchData.username" placeholder="请输入" />
+        <el-form-item prop="username" label="账户">
+          <el-input v-model="searchData.account" placeholder="请输入账户名" />
         </el-form-item>
-        <el-form-item prop="phone" label="手机号">
-          <el-input v-model="searchData.phone" placeholder="请输入" />
+        <el-form-item prop="phone" label="姓名">
+          <el-input v-model="searchData.realName" placeholder="请输入真实姓名" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -145,22 +149,32 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
       <div class="table-wrapper">
         <el-table :data="tableData">
           <el-table-column type="selection" width="50" align="center" />
-          <el-table-column prop="username" label="用户名" align="center" />
-          <el-table-column prop="roles" label="角色" align="center">
+          <el-table-column type="index"  prop="id" label="id" width="80" align="center" />
+          <el-table-column prop="userId" label="用户ID" align="center" />
+          <el-table-column prop="account" label="用户名" align="center" />
+          <el-table-column prop="identity" label="身份" align="center">
             <template #default="scope">
-              <el-tag v-if="scope.row.roles === 'admin'" type="primary" effect="plain">admin</el-tag>
-              <el-tag v-else type="warning" effect="plain">{{ scope.row.roles }}</el-tag>
+              <el-tag v-if="scope.row.identity === 1" type="primary" effect="plain">超级管理员</el-tag>
+              <el-tag v-else type="warning" effect="plain">普通管理员</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="phone" label="手机号" align="center" />
-          <el-table-column prop="email" label="邮箱" align="center" />
-          <el-table-column prop="status" label="状态" align="center">
+          <el-table-column prop="realName" label="真实姓名" align="center" />
+          <el-table-column prop="userState" label="用户状态" align="center">
             <template #default="scope">
-              <el-tag v-if="scope.row.status" type="success" effect="plain">启用</el-tag>
+              <el-tag v-if="scope.row.userState" type="success" effect="plain">启用</el-tag>
               <el-tag v-else type="danger" effect="plain">禁用</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" align="center" />
+          <el-table-column prop="createTime" label="创建时间" align="center" >
+            <template #default="scope">
+              {{ scope.row.createTime ? scope.row.createTime : '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="updateTime" label="更新时间" align="center" >
+            <template #default="scope">
+              {{ scope.row.updateTime ? scope.row.updateTime : '-' }}
+            </template>
+          </el-table-column>
           <el-table-column fixed="right" label="操作" width="150" align="center">
             <template #default="scope">
               <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
@@ -176,7 +190,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           :page-sizes="paginationData.pageSizes"
           :total="paginationData.total"
           :page-size="paginationData.pageSize"
-          :currentPage="paginationData.currentPage"
+          :currentPage="paginationData.pageNo"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -191,10 +205,10 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
     >
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
         <el-form-item prop="username" label="用户名">
-          <el-input v-model="formData.username" placeholder="请输入" />
+          <el-input v-model="formData.account" placeholder="请输入" />
         </el-form-item>
         <el-form-item prop="password" label="密码" v-if="formData.id === undefined">
-          <el-input v-model="formData.password" placeholder="请输入" />
+          <el-input v-model="formData.pwd" placeholder="请输入" />
         </el-form-item>
       </el-form>
       <template #footer>

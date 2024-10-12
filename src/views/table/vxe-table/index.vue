@@ -43,17 +43,17 @@ const xGridOpt: VxeGridProps = reactive({
   formConfig: {
     items: [
       {
-        field: "username",
+        field: "account",
         itemRender: {
           name: "$input",
           props: { placeholder: "用户名", clearable: true }
         }
       },
       {
-        field: "phone",
+        field: "realName",
         itemRender: {
           name: "$input",
-          props: { placeholder: "手机号", clearable: true }
+          props: { placeholder: "姓名", clearable: true }
         }
       },
       {

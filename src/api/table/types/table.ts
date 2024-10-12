@@ -1,28 +1,32 @@
 export interface CreateOrUpdateTableRequestData {
   id?: string
-  username: string
-  password?: string
+  account: string
+  identity: number
+  realName: string
+  pwd: string
 }
 
 export interface TableRequestData {
   /** 当前页码 */
-  currentPage: number
+  pageNo: number
   /** 查询条数 */
-  size: number
+  pageSize: number
   /** 查询参数：用户名 */
-  username?: string
+  account?: string
   /** 查询参数：手机号 */
-  phone?: string
+  realName?: string
 }
 
 export interface TableData {
+  id: number
+  pwd: string
   createTime: string
-  email: string
-  id: string
-  phone: string
-  roles: string
-  status: boolean
-  username: string
+  updateTime: string
+  userId: string
+  realName: string
+  identity: number
+  userState: boolean
+  account: string
 }
 
 export type TableResponseData = ApiResponseData<{

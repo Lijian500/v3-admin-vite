@@ -4,14 +4,14 @@ import type * as Table from "./types/table"
 /** 增 */
 export function createTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
   return request({
-    url: "table",
+    url: "/user/add",
     method: "post",
     data
   })
 }
 
 /** 删 */
-export function deleteTableDataApi(id: string) {
+export function deleteTableDataApi(id: number) {
   return request({
     url: `table/${id}`,
     method: "delete"
@@ -30,7 +30,7 @@ export function updateTableDataApi(data: Table.CreateOrUpdateTableRequestData) {
 /** 查 */
 export function getTableDataApi(params: Table.TableRequestData) {
   return request<Table.TableResponseData>({
-    url: "table",
+    url: "/user/page",
     method: "get",
     params
   })
