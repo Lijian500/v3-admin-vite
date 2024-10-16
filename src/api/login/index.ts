@@ -19,9 +19,9 @@ export function loginApi(data: Login.LoginRequestData) {
 }
 
 /** 获取用户详情 */
-export function getUserInfoApi() {
+export function getUserInfoApi(id:number) {
   return request<Login.UserInfoResponseData>({
-    url: "/users/info/4",
+    url: "/user/info/" + id,
     method: "get"
   })
 }

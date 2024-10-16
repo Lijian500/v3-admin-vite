@@ -1,4 +1,4 @@
-import { ref } from "vue"
+import { ref,reactive } from "vue"
 import store from "@/store"
 import { defineStore } from "pinia"
 import { useTagsViewStore } from "./tags-view"
@@ -13,7 +13,8 @@ export const useUserStore = defineStore("user", () => {
   const token = ref<string>(getToken() || "")
   const roles = ref<string[]>([])
   const username = ref<string>("")
-
+  const id = ref<number>(0)
+  const userId = ref<string>("")
   const tagsViewStore = useTagsViewStore()
   const settingsStore = useSettingsStore()
 
@@ -22,16 +23,12 @@ export const useUserStore = defineStore("user", () => {
     const { data } = await loginApi({ account, pwd, code })
     setToken(data.token)
     token.value = data.token
+    id.value = data.id
+    userId.value = data.userId
   }
   /** 获取用户详情 */
   const getInfo = async () => {
-    // const { data } = await getUserInfoApi()
-    const data = {
-      id: 1,
-      userId: "1",
-      account: "admin",
-      roles: ["admin"]
-    }
+    const { data } = await getUserInfoApi(id.value)
     username.value = data.account
     // 验证返回的 roles 是否为一个非空数组，否则塞入一个没有任何作用的默认角色，防止路由守卫逻辑进入无限循环
     roles.value = data.roles?.length > 0 ? data.roles : routeSettings.defaultRoles

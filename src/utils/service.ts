@@ -44,7 +44,7 @@ function createService() {
           return logout()
         default:
           // 不是正确的 code
-          ElMessage.error(apiData.message || "Error")
+          ElMessage.error(apiData.description || "Error")
           return Promise.reject(new Error("Error"))
       }
     },

@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { reactive, ref, watch } from "vue"
-import { createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi } from "@/api/table"
-import { type CreateOrUpdateTableRequestData, type TableData } from "@/api/table/types/table"
-import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
-import { Search, Refresh, CirclePlus, Delete, Download, RefreshRight } from "@element-plus/icons-vue"
-import { usePagination } from "@/hooks/usePagination"
-import { cloneDeep } from "lodash-es"
+import {reactive, ref, watch} from "vue"
+import {createTableDataApi, deleteTableDataApi, updateTableDataApi, getTableDataApi} from "@/api/table"
+import {type CreateOrUpdateTableRequestData, type TableData} from "@/api/table/types/table"
+import {type FormInstance, type FormRules, ElMessage, ElMessageBox} from "element-plus"
+import {Search, Refresh, CirclePlus, Delete, Download, RefreshRight} from "@element-plus/icons-vue"
+import {usePagination} from "@/hooks/usePagination"
+import {cloneDeep} from "lodash-es"
+import {UserStateEnum, IdentityEnum} from "@/constants/user-constant";
 
 defineOptions({
   // 命名当前组件
@@ -13,24 +14,37 @@ defineOptions({
 })
 
 const loading = ref<boolean>(false)
-const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
+const {paginationData, handleCurrentChange, handleSizeChange} = usePagination()
+
+const userState = [
+  {value: 1, label: "启用"},
+  {value: 2, label: "禁用"}
+]
 
 //#region 增
 const DEFAULT_FORM_DATA: CreateOrUpdateTableRequestData = {
   id: undefined,
+  identity: "",
+  userState: "",
   realName: "",
   account: "",
-  identity: 1,
   pwd: ""
 }
 const dialogVisible = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 const formData = ref<CreateOrUpdateTableRequestData>(cloneDeep(DEFAULT_FORM_DATA))
 const formRules: FormRules<CreateOrUpdateTableRequestData> = {
-  account: [{ required: true, trigger: "blur", message: "请输入用户名" }],
-  realName: [{ required: true, trigger: "blur", message: "请输入真实姓名" }],
-  identity: [{ required: true, trigger: "blur", message: "请选择身份" }],
-  pwd: [{ required: true, trigger: "blur", message: "请输入密码" }]
+  account: [
+    {required: true, trigger: "blur", message: "请输入用户名"},
+    {
+      validator: (rule, value) => /^[a-zA-Z0-9]{6,15}$/.test(value),
+      message: "用户名必须为6到15位字母或数字",
+      trigger: "blur"
+    }
+  ],
+  realName: [{required: true, trigger: "blur", message: "请输入真实姓名"}],
+  identity: [{required: true, trigger: "blur", message: "请选择身份"}],
+  pwd: [{required: true, trigger: "blur", message: "请输入密码"}]
 }
 const handleCreateOrUpdate = () => {
   formRef.value?.validate((valid: boolean, fields) => {
@@ -73,6 +87,7 @@ const handleDelete = (row: TableData) => {
 const handleUpdate = (row: TableData) => {
   dialogVisible.value = true
   formData.value = cloneDeep(row)
+
 }
 //#endregion
 
@@ -81,10 +96,15 @@ const tableData = ref<TableData[]>([])
 const searchFormRef = ref<FormInstance | null>(null)
 const searchData = reactive({
   account: "",
-  realName: ""
+  realName: "",
+  userState: undefined,
+  dataTime: [] as [string, string] | []
 })
 const getTableData = () => {
   loading.value = true
+  const startTime = searchData.dataTime && searchData.dataTime[0] ? searchData.dataTime[0]) : undefined
+  const endTime = searchData.dataTime && searchData.dataTime[1] ? formatDate(searchData.dataTime[1]) : undefined
+
   getTableDataApi({
     pageNo: paginationData.pageNo,
     pageSize: paginationData.pageSize,
@@ -112,18 +132,38 @@ const resetSearch = () => {
 //#endregion
 
 /** 监听分页参数的变化 */
-watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData, { immediate: true })
+watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData, {immediate: true})
 </script>
 
 <template>
   <div class="app-container">
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form ref="searchFormRef" :inline="true" :model="searchData">
-        <el-form-item prop="username" label="账户">
-          <el-input v-model="searchData.account" placeholder="请输入账户名" />
+        <el-form-item prop="account" label="账户">
+          <el-input v-model="searchData.account" placeholder="请输入账户名"/>
         </el-form-item>
-        <el-form-item prop="phone" label="姓名">
-          <el-input v-model="searchData.realName" placeholder="请输入真实姓名" />
+        <el-form-item prop="realName" label="姓名">
+          <el-input v-model="searchData.realName" placeholder="请输入真实姓名"/>
+        </el-form-item>
+        <el-form-item prop="userState" label="状态">
+          <el-select v-model="searchData.userState" style="width: 100px" placeholder="请选择状态">
+            <el-option
+              v-for="state in userState"
+              :key="state.value"
+              :label="state.label"
+              :value="state.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item lable="创建时间">
+          <el-date-picker
+            v-model="searchData.dataTime"
+            type="daterange"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -138,39 +178,39 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
           <el-button type="danger" :icon="Delete">批量删除</el-button>
         </div>
         <div>
-          <el-tooltip content="下载">
-            <el-button type="primary" :icon="Download" circle />
-          </el-tooltip>
+          <!--          <el-tooltip content="下载">-->
+          <!--            <el-button type="primary" :icon="Download" circle />-->
+          <!--          </el-tooltip>-->
           <el-tooltip content="刷新当前页">
-            <el-button type="primary" :icon="RefreshRight" circle @click="getTableData" />
+            <el-button type="primary" :icon="RefreshRight" circle @click="getTableData"/>
           </el-tooltip>
         </div>
       </div>
       <div class="table-wrapper">
         <el-table :data="tableData">
-          <el-table-column type="selection" width="50" align="center" />
-          <el-table-column type="index"  prop="id" label="id" width="80" align="center" />
-          <el-table-column prop="userId" label="用户ID" align="center" />
-          <el-table-column prop="account" label="用户名" align="center" />
+          <el-table-column type="selection" width="50" align="center"/>
+          <el-table-column prop="id" label="id" width="80" align="center"/>
+          <el-table-column prop="userId" label="用户ID" align="center"/>
+          <el-table-column prop="account" label="用户名" align="center"/>
           <el-table-column prop="identity" label="身份" align="center">
             <template #default="scope">
               <el-tag v-if="scope.row.identity === 1" type="primary" effect="plain">超级管理员</el-tag>
               <el-tag v-else type="warning" effect="plain">普通管理员</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="realName" label="真实姓名" align="center" />
+          <el-table-column prop="realName" label="真实姓名" align="center"/>
           <el-table-column prop="userState" label="用户状态" align="center">
             <template #default="scope">
-              <el-tag v-if="scope.row.userState" type="success" effect="plain">启用</el-tag>
+              <el-tag v-if="scope.row.userState == 1" type="success" effect="plain">启用</el-tag>
               <el-tag v-else type="danger" effect="plain">禁用</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" align="center" >
+          <el-table-column prop="createTime" label="创建时间" align="center">
             <template #default="scope">
               {{ scope.row.createTime ? scope.row.createTime : '-' }}
             </template>
           </el-table-column>
-          <el-table-column prop="updateTime" label="更新时间" align="center" >
+          <el-table-column prop="updateTime" label="更新时间" align="center">
             <template #default="scope">
               {{ scope.row.updateTime ? scope.row.updateTime : '-' }}
             </template>
@@ -178,7 +218,9 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
           <el-table-column fixed="right" label="操作" width="150" align="center">
             <template #default="scope">
               <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
-              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button v-if="scope.row.userState === 2" type="danger" text bg size="small"
+                         @click="handleDelete(scope.row)">删除
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -201,15 +243,31 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
       v-model="dialogVisible"
       :title="formData.id === undefined ? '新增用户' : '修改用户'"
       @closed="resetForm"
-      width="30%"
-    >
+      width="30%">
+
       <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
-        <el-form-item prop="username" label="用户名">
-          <el-input v-model="formData.account" placeholder="请输入" />
+        <el-form-item prop="account" label="用户名">
+          <el-input v-model="formData.account" placeholder="请输入"/>
         </el-form-item>
-        <el-form-item prop="password" label="密码" v-if="formData.id === undefined">
-          <el-input v-model="formData.pwd" placeholder="请输入" />
+        <el-form-item prop="pwd" label="密码" v-if="formData.id === undefined">
+          <el-input type="password" v-model="formData.pwd" placeholder="请输入" show-password/>
         </el-form-item>
+        <el-form-item prop="realName" label="真实姓名">
+          <el-input v-model="formData.realName" placeholder="真实姓名"/>
+        </el-form-item>
+        <el-form-item prop="identity" label="身份">
+          <el-radio-group v-model="formData.identity" class="ml-4">
+            <el-radio :label="1" size="large">超级管理员</el-radio>
+            <el-radio :label="2" size="large">普通管理员</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item prop="userState" label="状态">
+          <el-radio-group v-model="formData.userState" class="ml-4">
+            <el-radio :label="1" size="large">启用</el-radio>
+            <el-radio :label="2" size="large">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -222,6 +280,7 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
 <style lang="scss" scoped>
 .search-wrapper {
   margin-bottom: 20px;
+
   :deep(.el-card__body) {
     padding-bottom: 2px;
   }

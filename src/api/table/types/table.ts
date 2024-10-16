@@ -4,6 +4,7 @@ export interface CreateOrUpdateTableRequestData {
   identity: number
   realName: string
   pwd: string
+  userState?: number
 }
 
 export interface TableRequestData {

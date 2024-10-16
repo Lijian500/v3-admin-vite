@@ -10,6 +10,7 @@ import ThemeSwitch from "@/components/ThemeSwitch/index.vue"
 import Owl from "./components/Owl.vue"
 import {useFocus} from "./hooks/useFocus"
 
+
 const router = useRouter()
 const {isFocus, handleBlur, handleFocus} = useFocus()
 
@@ -30,7 +31,7 @@ const loginFormData: LoginRequestData = reactive({
 const loginFormRules: FormRules = {
   account: [
     {required: true, message: "请输入用户名", trigger: "blur"},
-    {validator: (rule, value) => /^[A-Za-z]{6,15}$/.test(value), message: "用户名必须为6到15位字母", trigger: "blur"}
+    {validator: (rule, value) => /^[a-zA-Z0-9]{6,15}$/.test(value), message: "用户名必须为6到15位字母或数字", trigger: "blur"}
   ],
   pwd: [
     {required: true, message: "请输入密码", trigger: "blur"},
@@ -81,7 +82,7 @@ const createCode = () => {
     <Owl :close-eyes="isFocus"/>
     <div class="login-card">
       <div class="title">
-        <img src="@/assets/layouts/logo-text-2.png"/>
+        <img src="@/assets/layouts/logo.png"/>
       </div>
       <div class="content">
         <el-form ref="loginFormRef" :model="loginFormData" :rules="loginFormRules" @keyup.enter="handleLogin">
