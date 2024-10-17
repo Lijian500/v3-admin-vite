@@ -15,6 +15,8 @@ import SearchMenu from "@/components/SearchMenu/index.vue"
 import { useDevice } from "@/hooks/useDevice"
 import { useLayoutMode } from "@/hooks/useLayoutMode"
 import { logoutApi } from "@/api/login"
+import {ref, reactive} from "vue";
+import {ElMessage} from "element-plus";
 
 const { isMobile } = useDevice()
 const { isTop } = useLayoutMode()
@@ -22,6 +24,7 @@ const router = useRouter()
 const appStore = useAppStore()
 const userStore = useUserStore()
 const settingsStore = useSettingsStore()
+
 const { showNotify, showThemeSwitch, showScreenfull, showSearchMenu } = storeToRefs(settingsStore)
 
 /** 切换侧边栏 */
@@ -29,15 +32,67 @@ const toggleSidebar = () => {
   appStore.toggleSidebar(false)
 }
 
-/** 修改密码 */
-const modifyPassword = () => {
-  // ElMessage.success('修改密码');
-}
+//#region 修改密码
+
+const dialogVisible = ref(false);
+const passwordFormRef = ref(null);
+const passwordForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmNewPassword: ''
+});
+
+const validateConfirmPassword = (rule, value, callback) => {
+  if (value !== passwordForm.newPassword) {
+    callback(new Error('两次输入的密码不一致'));
+  } else {
+    callback();
+  }
+};
+
+const rules = reactive({
+  oldPassword: [
+    { required: true, message: '请输入原密码', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
+  ],
+  confirmNewPassword: [
+    { required: true, message: '请确认新密码', trigger: 'blur' },
+    { validator: validateConfirmPassword, trigger: 'blur' }
+  ]
+});
+
+
+
+const showModifyPasswordDialog = () => {
+  dialogVisible.value = true;
+};
+
+const submitForm = () => {
+  passwordFormRef.value.validate((valid) => {
+    if (valid) {
+      // 这里可以调用修改密码的 API
+      ElMessage.success('密码修改成功');
+      resetPasswordForm()
+      dialogVisible.value = false;
+    } else {
+      ElMessage.error('表单验证失败');
+      return false;
+    }
+  });
+};
+
+const resetPasswordForm = () => {
+  passwordFormRef.value.resetFields();
+};
+
+//endregion
 
 //#region 个人中心
 const goToDetails = () => {
   const id = userStore.id
-  console.log(id)
   router.push({ name: 'UserDetail', params: { id: id } })
 }
 //#endregion
@@ -77,7 +132,7 @@ const logout = () => {
               <span style="display: block">个人中心</span>
             </el-dropdown-item>
             <!-- 修改密码 -->
-            <el-dropdown-item divided @click="modifyPassword">
+            <el-dropdown-item divided @click="showModifyPasswordDialog">
               <span style="display: block">修改密码</span>
             </el-dropdown-item>
             <!-- 退出登录 -->
@@ -86,8 +141,31 @@ const logout = () => {
             </el-dropdown-item>
           </el-dropdown-menu>
         </template>
+
       </el-dropdown>
     </div>
+  </div>
+  <div>
+    <el-dialog v-model="dialogVisible" title="修改密码" width="30%">
+      <el-form :model="passwordForm" :rules="rules" ref="passwordFormRef" label-width="100px">
+        <el-form-item label="原密码" prop="oldPassword">
+          <el-input v-model="passwordForm.oldPassword" type="password" autocomplete="off" show-password></el-input>
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="passwordForm.newPassword" type="password" autocomplete="off" show-password></el-input>
+        </el-form-item>
+        <el-form-item label="确认新密码" prop="confirmNewPassword">
+          <el-input v-model="passwordForm.confirmNewPassword" type="password" autocomplete="off" show-password></el-input>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+            <span class="dialog-footer">
+              <el-button @click="dialogVisible = false, resetPasswordForm()" >取消</el-button>
+              <el-button type="primary" @click="submitForm">确定</el-button>
+            </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
