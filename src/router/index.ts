@@ -106,7 +106,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     path: "/table",
     component: Layouts,
     redirect: "/table/element-plus",
-    name: "用户管理",
+    name: "TableManagement",
     meta: {
       title: "用户管理",
       elIcon: "User"
@@ -119,6 +119,15 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "用户列表",
           keepAlive: true
+        }
+      },{
+        path: "detail/:id",
+        component: () => import("@/views/table/element-plus/detail.vue"),
+        name: "UserDetail",
+        meta: {
+          title: "详情",
+          keepAlive: true,
+          hidden: true
         }
       },{
         path: "vxe-table",

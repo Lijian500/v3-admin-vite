@@ -25,3 +25,11 @@ export function getUserInfoApi(id:number) {
     method: "get"
   })
 }
+
+/** 登出 */
+export function logoutApi() {
+  return request({
+    url: "/logout",
+    method: "post"
+  })
+}

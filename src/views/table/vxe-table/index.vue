@@ -21,9 +21,10 @@ defineOptions({
 
 //#region vxe-grid
 interface RowMeta {
-  id: string
-  username: string
-  roles: string
+  id: number
+  userId: string
+  account: string
+  identity: string
   phone: string
   email: string
   status: boolean

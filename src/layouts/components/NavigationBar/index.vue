@@ -14,6 +14,7 @@ import Screenfull from "@/components/Screenfull/index.vue"
 import SearchMenu from "@/components/SearchMenu/index.vue"
 import { useDevice } from "@/hooks/useDevice"
 import { useLayoutMode } from "@/hooks/useLayoutMode"
+import { logoutApi } from "@/api/login"
 
 const { isMobile } = useDevice()
 const { isTop } = useLayoutMode()
@@ -28,8 +29,22 @@ const toggleSidebar = () => {
   appStore.toggleSidebar(false)
 }
 
+/** 修改密码 */
+const modifyPassword = () => {
+  // ElMessage.success('修改密码');
+}
+
+//#region 个人中心
+const goToDetails = () => {
+  const id = userStore.id
+  console.log(id)
+  router.push({ name: 'UserDetail', params: { id: id } })
+}
+//#endregion
+
 /** 登出 */
 const logout = () => {
+  logoutApi()
   userStore.logout()
   router.push("/login")
 }
@@ -57,12 +72,15 @@ const logout = () => {
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <a target="_blank" href="https://github.com/un-pany/v3-admin-vite">
-              <el-dropdown-item>GitHub</el-dropdown-item>
-            </a>
-            <a target="_blank" href="https://gitee.com/un-pany/v3-admin-vite">
-              <el-dropdown-item>Gitee</el-dropdown-item>
-            </a>
+            <!-- 个人中心 -->
+            <el-dropdown-item divided @click="goToDetails">
+              <span style="display: block">个人中心</span>
+            </el-dropdown-item>
+            <!-- 修改密码 -->
+            <el-dropdown-item divided @click="modifyPassword">
+              <span style="display: block">修改密码</span>
+            </el-dropdown-item>
+            <!-- 退出登录 -->
             <el-dropdown-item divided @click="logout">
               <span style="display: block">退出登录</span>
             </el-dropdown-item>

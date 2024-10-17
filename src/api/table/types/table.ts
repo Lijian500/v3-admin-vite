@@ -14,8 +14,20 @@ export interface TableRequestData {
   pageSize: number
   /** 查询参数：用户名 */
   account?: string
-  /** 查询参数：手机号 */
+  /** 查询参数：姓名 */
   realName?: string
+  createStartTime?: string
+  createEndTime?: string
+  userState?: number
+}
+
+export interface UserDeleteBatchRequestData {
+  ids: string
+}
+
+
+export interface UpdateUserStateRequestData {
+  userId: string
 }
 
 export interface TableData {
@@ -26,7 +38,7 @@ export interface TableData {
   userId: string
   realName: string
   identity: number
-  userState: boolean
+  userState: number
   account: string
 }
 
