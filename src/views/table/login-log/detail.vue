@@ -11,13 +11,18 @@
         <el-descriptions-item label="真实姓名">{{ logDetails.realName }}</el-descriptions-item>
         <el-descriptions-item label="登录时间">{{ logDetails.loginTime }}</el-descriptions-item>
         <el-descriptions-item label="登录结果">
-          <el-tag :type="logDetails.loginState === 1 ? 'success' : 'danger'">
-            {{ logDetails.loginResult }}
+          <!-- 1登录成功 2登录失败 3退出登录 -->
+          <el-tag :type="getLogResultType(logDetails.loginState)" effect="plain">
+            {{ getLogResultText(logDetails.loginState) }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="IP地址">{{ logDetails.ip }}</el-descriptions-item>
-        <el-descriptions-item label="设备信息">{{ logDetails.deviceInfo }}</el-descriptions-item>
-        <el-descriptions-item label="来源类型">{{ logDetails.sourceType }}</el-descriptions-item>
+        <el-descriptions-item label="设备信息">{{
+            logDetails.deviceInfo ? logDetails.deviceInfo : '-'
+          }}
+        </el-descriptions-item>
+        <el-descriptions-item label="来源类型">{{ logDetails.sourceType ? logDetails.sourceType : '-' }}
+        </el-descriptions-item>
         <el-descriptions-item label="用户ID">{{ logDetails.userId }}</el-descriptions-item>
         <el-descriptions-item label="登录日志ID">{{ logDetails.loginLogId }}</el-descriptions-item>
         <el-descriptions-item label="ID">{{ logDetails.id }}</el-descriptions-item>
@@ -28,7 +33,7 @@
 
 <script lang="ts" setup>
 import {onMounted, ref} from 'vue'
-import { ElCard, ElDescriptions, ElDescriptionsItem, ElTag } from 'element-plus'
+import {ElCard, ElDescriptions, ElDescriptionsItem, ElTag} from 'element-plus'
 import {getLogDetailApi} from "@/api/login-log";
 import {useRoute} from "vue-router";
 
@@ -70,6 +75,29 @@ const loadLoginLogDetails = async (id: number) => {
     console.error('获取日志详情失败', error)
   }
 }
+const getLogResultType = (state: number) => {
+  switch (state) {
+    case 1:
+      return 'success';
+    case 2:
+      return 'danger';
+    default:
+      return 'primary';
+  }
+};
+
+const getLogResultText = (state: number) => {
+  switch (state) {
+    case 1:
+      return '登录成功';
+    case 2:
+      return '登录失败';
+    case 3:
+      return '退出登录';
+    default:
+      return '未知状态';
+  }
+};
 
 const route = useRoute();
 const id = Number(route.params.id);

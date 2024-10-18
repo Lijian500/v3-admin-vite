@@ -149,6 +149,27 @@ export const constantRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path:"/category",
+    component: Layouts,
+    redirect: "/category/list",
+    name: "Category",
+    meta: {
+      title: "分类管理",
+      elIcon: "Management"
+    },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/category/list/index.vue"),
+        name: "CategoryList",
+        meta: {
+          title: "分类列表",
+          keepAlive: false
+        }
+      }
+    ]
+  },
   // {
   //   path: "/menu",
   //   component: Layouts,

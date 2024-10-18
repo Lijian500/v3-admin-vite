@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {reactive, ref, watch} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {Refresh, Search} from "@element-plus/icons-vue";
 import {usePagination} from "@/hooks/usePagination";
 import type {ILoginLogData, ILoginLogTableRequestData} from "@/api/login-log/types/login-log";
@@ -69,14 +69,42 @@ const goToDetails = (id: number) => {
 
 const loginState = [
   {
-    label: '成功',
+    label: '登录成功',
     value: 1
   },
   {
-    label: '失败',
+    label: '登录失败',
     value: 2
+  },
+  {
+    label: '退出登录',
+    value: 3
   }
 ]
+
+const getLogResultType = (state: number) => {
+  switch (state) {
+    case 1:
+      return 'success';
+    case 2:
+      return 'danger';
+    default:
+      return 'primary';
+  }
+};
+
+const getLogResultText = (state: number) =>  {
+  switch (state) {
+    case 1:
+      return '登录成功';
+    case 2:
+      return '登录失败';
+    case 3:
+      return '退出登录';
+    default:
+      return '未知状态';
+  }
+};
 
 /** 监听分页参数的变化 */
 watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData, {immediate: true})
@@ -122,10 +150,10 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
     <el-card shadow="never">
       <div class="vxe-grid--toolbar-wrapper"></div>
       <div class="table-wrapper">
-        <el-table :data="tableData" >
+        <el-table :data="tableData">
           <el-table-column label="序号" type="index" align="center"/>
-<!--          <el-table-column prop="id" label="id" width="80" align="center"/>-->
-<!--          <el-table-column prop="userId" label="用户ID" align="center"/>-->
+          <!--          <el-table-column prop="id" label="id" width="80" align="center"/>-->
+          <!--          <el-table-column prop="userId" label="用户ID" align="center"/>-->
           <el-table-column prop="account" label="用户名" align="center"/>
           <el-table-column prop="identity" label="身份" align="center">
             <template #default="scope">
@@ -136,8 +164,10 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
           <el-table-column prop="realName" label="真实姓名" align="center"/>
           <el-table-column prop="loginState" label="登录状态" align="center">
             <template #default="scope">
-              <el-tag v-if="scope.row.loginState == 1" type="success" effect="plain">成功</el-tag>
-              <el-tag v-else type="danger" effect="plain">失败</el-tag>
+              <!-- 1登录成功 2登录失败 3退出登录 -->
+              <el-tag :type="getLogResultType(scope.row.loginState)" effect="plain">
+                {{ getLogResultText(scope.row.loginState) }}
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="loginResult" label="登录结果" align="center">
