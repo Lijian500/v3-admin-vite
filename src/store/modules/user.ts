@@ -27,7 +27,7 @@ export const useUserStore = defineStore("user", () => {
       id.value = data.id
       userId.value = data.userId
       loginUserInfo.value = data
-
+      // roles.value = ["admin"]
       // data.identity 不为空 则创建一个数组 并赋值给 roles
       // roles.value = data.identity? Array.of(data.identity) : routeSettings.defaultRoles
       // roles.value = data.identity ? [String(data.identity)] : routeSettings.defaultRoles;
@@ -40,6 +40,7 @@ export const useUserStore = defineStore("user", () => {
       username.value = data.account
       // 验证返回的 roles 是否为一个非空数组，否则塞入一个没有任何作用的默认角色，防止路由守卫逻辑进入无限循环
       roles.value = data.roles?.length > 0 ? data.roles : routeSettings.defaultRoles
+
     }
     /** 模拟角色变化 */
     const changeRoles = async (role: string) => {

@@ -33,7 +33,20 @@ router.beforeEach(async (to, _from, next) => {
   }
 
   // 如果用户已经获得其权限角色
-  if (userStore.roles.length !== 0) return next()
+  // if (userStore.roles.length !== 0) return next()
+
+  // 如果用户已经获得其权限角色
+  if (userStore.roles.length !== 0) {
+    // 检查动态路由是否已经添加
+    if (permissionStore.addRoutes.length === 0) {
+      // 重新生成可访问的 Routes
+      routeSettings.dynamic ? permissionStore.setRoutes(userStore.roles) : permissionStore.setAllRoutes()
+      // 将 "有访问权限的动态路由" 添加到 Router 中
+      permissionStore.addRoutes.forEach((route) => router.addRoute(route))
+    }
+    return next()
+  }
+
 
   // 否则要重新获取权限角色
   try {
