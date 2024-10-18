@@ -1,9 +1,11 @@
 <template>
   <div class="user-details">
     <el-card shadow="never" class="user-card">
-      <div slot="header" class="header">
-        <span>用户详情</span>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span>用户详情</span>
+        </div>
+      </template>
       <el-descriptions title="" :column="2" border>
         <el-descriptions-item label="账号">{{ user.account }}</el-descriptions-item>
         <el-descriptions-item label="真实姓名">{{ user.realName }}</el-descriptions-item>
@@ -71,7 +73,7 @@ const loadUserDetails = async (id: number) => {
     const response = await getUserOneApi(id)
     user.value = response.data
   } catch (error) {
-    console.error('Failed to fetch user details:', error)
+    console.error('获取用户详情失败', error)
   }
 }
 
@@ -105,6 +107,7 @@ const formattedUserState = computed(() => {
 });
 </script>
 <style scoped lang="scss">
+/*
 .user-details {
   padding: 15px;
   .user-card {
@@ -114,5 +117,12 @@ const formattedUserState = computed(() => {
     font-size: 18px;
     font-weight: bold;
   }
+}
+
+ */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

@@ -2,6 +2,7 @@
 import { createApp } from "vue"
 import App from "@/App.vue"
 import store from "@/store"
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import router from "@/router"
 import "@/router/permission"
 // load
@@ -25,6 +26,8 @@ loadPlugins(app)
 loadSvg(app)
 /** 加载自定义指令 */
 loadDirectives(app)
+
+store.use(piniaPluginPersistedstate)
 
 app.use(store).use(router)
 router.isReady().then(() => {

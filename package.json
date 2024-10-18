@@ -38,6 +38,7 @@
     "path-browserify": "1.0.1",
     "path-to-regexp": "8.2.0",
     "pinia": "2.2.4",
+    "pinia-plugin-persistedstate": "4.1.1",
     "screenfull": "6.0.2",
     "vue": "3.5.11",
     "vue-router": "4.4.5",

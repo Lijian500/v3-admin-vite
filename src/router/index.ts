@@ -118,10 +118,10 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "ElementPlus",
         meta: {
           title: "用户列表",
-          keepAlive: true
+          keepAlive: false
         }
       },{
-        path: "detail/:id",
+        path: "/element-plus/detail/:id",
         component: () => import("@/views/table/element-plus/detail.vue"),
         name: "UserDetail",
         meta: {
@@ -130,13 +130,21 @@ export const constantRoutes: RouteRecordRaw[] = [
           hidden: true
         }
       },{
-        path: "vxe-table",
-        component: () => import("@/views/table/vxe-table/index.vue"),
-        name: "VxeTable",
+        path: "/login/log",
+        component: () => import("@/views/table/login-log/index.vue"),
+        name: "LoginLog",
         meta: {
-          title: "Vxe Table",
+          title: "登录日志",
+          keepAlive: false,
+        }
+      },{
+        path: "/login/log/detail/:id",
+        component: () => import("@/views/table/login-log/detail.vue"),
+        name: "LoginLogDetail",
+        meta: {
+          title: "详情",
           keepAlive: true,
-          // hidden: true,
+          hidden: true
         }
       }
     ]

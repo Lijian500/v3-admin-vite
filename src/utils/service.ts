@@ -53,7 +53,7 @@ function createService() {
       const status = get(error, "response.status")
       switch (status) {
         case 400:
-          error.message = "请求错误"
+          error.message = "请求参数异常"
           break
         case 401:
           // Token 过期时

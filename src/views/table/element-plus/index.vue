@@ -105,13 +105,20 @@ const deleteSelected = () => {
     return;
   }
 
-  deleteBatch({ids: selectedRows.value.map(item => item.id.toString())})
-    .then(() => {
-      ElMessage.success('删除成功');
-      getTableData();
-  }).finally(() => {
-    selectedRows.value = [];
+  ElMessageBox.confirm(`正在删除选中的${selectedRows.value.length}条数据，确认删除？`, "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(() => {
+    deleteBatch({ids: selectedRows.value.map(item => item.id)})
+      .then(() => {
+        ElMessage.success('删除成功');
+        getTableData();
+      })
+  }).catch(() => {
+    // selectedRows.value = [];
   })
+
 };
 //#endregion
 
@@ -141,7 +148,7 @@ const handleResetPassword = (id: number) => {
 
 //#region 详情
 const goToDetails = (id: number) => {
-  router.push({ name: 'UserDetail', params: { id: id } })
+  router.push({name: 'UserDetail', params: {id: id}})
 }
 //#endregion
 
@@ -171,10 +178,6 @@ const handleUserState = (row: TableData) => {
 //#endregion
 
 //#region 查
-const defaultTime = ref([
-  new Date(2000, 1, 1, 0, 0, 0),
-  new Date(2000, 2, 1, 23, 59, 59),
-])
 const tableData = ref<TableData[]>([])
 const searchFormRef = ref<FormInstance | null>(null)
 const searchData = reactive({
@@ -183,10 +186,12 @@ const searchData = reactive({
   userState: undefined,
   dataTime: [] as [string, string] | []
 })
+
+
 const getTableData = () => {
   loading.value = true
-  const startTime = searchData.dataTime && searchData.dataTime[0] ? searchData.dataTime[0].replace("+", " ") : undefined
-  const endTime = searchData.dataTime && searchData.dataTime[1] ? searchData.dataTime[1].replace("+", " ")  : undefined
+  const startTime = searchData.dataTime && searchData.dataTime[0] ? searchData.dataTime[0] + " 00:00:00" : undefined
+  const endTime = searchData.dataTime && searchData.dataTime[1] ? searchData.dataTime[1] + " 23:59:59" : undefined
 
   getTableDataApi({
     pageNo: paginationData.pageNo,
@@ -194,8 +199,8 @@ const getTableData = () => {
     account: searchData.account || undefined,
     realName: searchData.realName || undefined,
     userState: searchData.userState || undefined,
-    createStartTime: startTime || undefined,
-    createEndTime: endTime || undefined,
+    loginStartTime: startTime || undefined,
+    loginEndTime: endTime || undefined,
   })
     .then(res => {
       paginationData.total = res.total
@@ -243,7 +248,7 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
           <el-input v-model="searchData.realName" placeholder="请输入真实姓名"/>
         </el-form-item>
         <el-form-item prop="userState" label="状态">
-          <el-select v-model="searchData.userState" style="width: 100px" placeholder="请选择状态">
+          <el-select v-model="searchData.userState" clearable style="width: 100px" placeholder="请选择状态">
             <el-option
               v-for="state in userState"
               :key="state.value"
@@ -252,7 +257,7 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
             />
           </el-select>
         </el-form-item>
-        <el-form-item lable="创建时间">
+        <el-form-item prop="dataTime" label="创建时间">
           <el-date-picker
             v-model="searchData.dataTime"
             type="daterange"
@@ -260,8 +265,7 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
             range-separator="至"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            :default-time="defaultTime"
+            value-format="YYYY-MM-DD"
           />
         </el-form-item>
         <el-form-item>
@@ -318,9 +322,14 @@ watch([() => paginationData.pageNo, () => paginationData.pageSize], getTableData
             <template #default="scope">
               <el-button type="primary" text bg size="small" @click="goToDetails(scope.row.id)">详情</el-button>
               <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
-              <el-button :type="scope.row.userState === 1 ? 'danger' : 'success'" text bg size="small" @click="handleUserState(scope.row)"> {{ scope.row.userState === 1 ? '禁用' : '启用' }}</el-button>
-              <el-button v-if="scope.row.userState === 2" type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>
-              <el-button type="primary" text bg size="small" @click="handleResetPassword(scope.row.id)">重置密码</el-button>
+              <el-button :type="scope.row.userState === 1 ? 'danger' : 'success'" text bg size="small"
+                         @click="handleUserState(scope.row)"> {{ scope.row.userState === 1 ? '禁用' : '启用' }}
+              </el-button>
+              <el-button v-if="scope.row.userState === 2" type="danger" text bg size="small"
+                         @click="handleDelete(scope.row)">删除
+              </el-button>
+              <el-button type="primary" text bg size="small" @click="handleResetPassword(scope.row.id)">重置密码
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
