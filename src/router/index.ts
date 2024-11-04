@@ -1,5 +1,5 @@
-import { type RouteRecordRaw, createRouter } from "vue-router"
-import { history, flatMultiLevelRoutes } from "./helper"
+import {type RouteRecordRaw, createRouter} from "vue-router"
+import {history, flatMultiLevelRoutes} from "./helper"
 import routeSettings from "@/config/route"
 
 const Layouts = () => import("@/layouts/index.vue")
@@ -79,7 +79,7 @@ export const constantRoutes: RouteRecordRaw[] = [
           title: "用户列表",
           keepAlive: false
         }
-      },{
+      }, {
         path: "/element-plus/detail/:id",
         component: () => import("@/views/table/element-plus/detail.vue"),
         name: "UserDetail",
@@ -88,7 +88,7 @@ export const constantRoutes: RouteRecordRaw[] = [
           keepAlive: true,
           hidden: true
         }
-      },{
+      }, {
         path: "/login/log",
         component: () => import("@/views/table/login-log/index.vue"),
         name: "LoginLog",
@@ -96,7 +96,7 @@ export const constantRoutes: RouteRecordRaw[] = [
           title: "登录日志",
           keepAlive: false,
         }
-      },{
+      }, {
         path: "/login/log/detail/:id",
         component: () => import("@/views/table/login-log/detail.vue"),
         name: "LoginLogDetail",
@@ -109,7 +109,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
-    path:"/category",
+    path: "/category",
     component: Layouts,
     redirect: "/category/list",
     name: "Category",
@@ -130,28 +130,43 @@ export const constantRoutes: RouteRecordRaw[] = [
       }
     ]
   },
-  // {
-  //   path:"/tools",
-  //   component: Layouts,
-  //   redirect: "/tools/list",
-  //   name: "Tools",
-  //   meta: {
-  //     title: "工具管理",
-  //     elIcon: "Tools",
-  //     alwaysShow: true
-  //   },
-  //   children: [
-  //     {
-  //       path: "list",
-  //       component: () => import("@/views/tools/list/index.vue"),
-  //       name: "ToolsList",
-  //       meta: {
-  //         title: "工具列表",
-  //         keepAlive: true
-  //       }
-  //     }
-  //   ]
-  // }
+  {
+    path: '/tool',
+    component: Layouts,
+    redirect: "/tool/list",
+    name: "tool",
+    meta: {
+      title: "工具管理",
+      elIcon: "tools",
+      alwaysShow: true
+    },
+    children: [
+      {
+        path: 'list',
+        name: 'ToolManagement',
+        component: () => import('@/views/tool/index.vue'),
+        meta: {title: '工具管理'}
+      },
+      {
+        path: 'add',
+        name: 'ToolAdd',
+        component: () => import('@/views/tool/detail.vue'),
+        meta: {title: '新增工具', activeMenu: '/tool/list', hidden: true}
+      },
+      {
+        path: 'edit/:id',
+        name: 'ToolEdit',
+        component: () => import('@/views/tool/detail.vue'),
+        meta: {title: '编辑工具', activeMenu: '/tool/list', hidden: true}
+      },
+      {
+        path: 'detail/:id',
+        name: 'ToolDetail',
+        component: () => import('@/views/tool/detail.vue'),
+        meta: {title: '工具详情', activeMenu: '/tool/list', hidden: true}
+      }
+    ]
+  }
 ]
 
 /**
@@ -203,7 +218,7 @@ export function resetRouter() {
   // 注意：所有动态路由路由必须带有 Name 属性，否则可能会不能完全重置干净
   try {
     router.getRoutes().forEach((route) => {
-      const { name, meta } = route
+      const {name, meta} = route
       if (name && meta.roles?.length) {
         router.hasRoute(name) && router.removeRoute(name)
       }
