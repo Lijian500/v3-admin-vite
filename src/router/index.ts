@@ -61,47 +61,6 @@ export const constantRoutes: RouteRecordRaw[] = [
       }
     ]
   },
-  // {
-  //   path: "/unocss",
-  //   component: Layouts,
-  //   redirect: "/unocss/index",
-  //   children: [
-  //     {
-  //       path: "index",
-  //       component: () => import("@/views/unocss/index.vue"),
-  //       name: "UnoCSS",
-  //       meta: {
-  //         title: "UnoCSS",
-  //         svgIcon: "unocss"
-  //       }
-  //     }
-  //   ]
-  // },
-  // {
-  //   path: "/link",
-  //   meta: {
-  //     title: "外链",
-  //     svgIcon: "link"
-  //   },
-  //   children: [
-  //     {
-  //       path: "https://juejin.cn/post/7089377403717287972",
-  //       component: () => {},
-  //       name: "Link1",
-  //       meta: {
-  //         title: "中文文档"
-  //       }
-  //     },
-  //     {
-  //       path: "https://juejin.cn/column/7207659644487139387",
-  //       component: () => {},
-  //       name: "Link2",
-  //       meta: {
-  //         title: "新手教程"
-  //       }
-  //     }
-  //   ]
-  // },
   {
     path: "/table",
     component: Layouts,
@@ -156,7 +115,8 @@ export const constantRoutes: RouteRecordRaw[] = [
     name: "Category",
     meta: {
       title: "分类管理",
-      elIcon: "Management"
+      elIcon: "Grid",
+      alwaysShow: true
     },
     children: [
       {
@@ -165,123 +125,29 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "CategoryList",
         meta: {
           title: "分类列表",
-          keepAlive: false
+          keepAlive: true
         }
       }
     ]
   },
   // {
-  //   path: "/menu",
+  //   path:"/tools",
   //   component: Layouts,
-  //   redirect: "/menu/menu1",
-  //   name: "Menu",
+  //   redirect: "/tools/list",
+  //   name: "Tools",
   //   meta: {
-  //     title: "多级路由",
-  //     svgIcon: "menu"
-  //   },
-  //   children: [
-  //     {
-  //       path: "menu1",
-  //       component: () => import("@/views/menu/menu1/index.vue"),
-  //       redirect: "/menu/menu1/menu1-1",
-  //       name: "Menu1",
-  //       meta: {
-  //         title: "menu1"
-  //       },
-  //       children: [
-  //         {
-  //           path: "menu1-1",
-  //           component: () => import("@/views/menu/menu1/menu1-1/index.vue"),
-  //           name: "Menu1-1",
-  //           meta: {
-  //             title: "menu1-1",
-  //             keepAlive: true
-  //           }
-  //         },
-  //         {
-  //           path: "menu1-2",
-  //           component: () => import("@/views/menu/menu1/menu1-2/index.vue"),
-  //           redirect: "/menu/menu1/menu1-2/menu1-2-1",
-  //           name: "Menu1-2",
-  //           meta: {
-  //             title: "menu1-2"
-  //           },
-  //           children: [
-  //             {
-  //               path: "menu1-2-1",
-  //               component: () => import("@/views/menu/menu1/menu1-2/menu1-2-1/index.vue"),
-  //               name: "Menu1-2-1",
-  //               meta: {
-  //                 title: "menu1-2-1",
-  //                 keepAlive: true
-  //               }
-  //             },
-  //             {
-  //               path: "menu1-2-2",
-  //               component: () => import("@/views/menu/menu1/menu1-2/menu1-2-2/index.vue"),
-  //               name: "Menu1-2-2",
-  //               meta: {
-  //                 title: "menu1-2-2",
-  //                 keepAlive: true
-  //               }
-  //             }
-  //           ]
-  //         },
-  //         {
-  //           path: "menu1-3",
-  //           component: () => import("@/views/menu/menu1/menu1-3/index.vue"),
-  //           name: "Menu1-3",
-  //           meta: {
-  //             title: "menu1-3",
-  //             keepAlive: true
-  //           }
-  //         }
-  //       ]
-  //     },
-  //     {
-  //       path: "menu2",
-  //       component: () => import("@/views/menu/menu2/index.vue"),
-  //       name: "Menu2",
-  //       meta: {
-  //         title: "menu2",
-  //         keepAlive: true
-  //       }
-  //     }
-  //   ]
-  // },
-  // {
-  //   path: "/hook-demo",
-  //   component: Layouts,
-  //   redirect: "/hook-demo/use-fetch-select",
-  //   name: "HookDemo",
-  //   meta: {
-  //     title: "Hook",
-  //     elIcon: "Menu",
+  //     title: "工具管理",
+  //     elIcon: "Tools",
   //     alwaysShow: true
   //   },
   //   children: [
   //     {
-  //       path: "use-fetch-select",
-  //       component: () => import("@/views/hook-demo/use-fetch-select.vue"),
-  //       name: "UseFetchSelect",
+  //       path: "list",
+  //       component: () => import("@/views/tools/list/index.vue"),
+  //       name: "ToolsList",
   //       meta: {
-  //         title: "useFetchSelect"
-  //       }
-  //     },
-  //     {
-  //       path: "use-fullscreen-loading",
-  //       component: () => import("@/views/hook-demo/use-fullscreen-loading.vue"),
-  //       name: "UseFullscreenLoading",
-  //       meta: {
-  //         title: "useFullscreenLoading"
-  //       }
-  //     },
-  //     {
-  //       path: "use-watermark",
-  //       component: () => import("@/views/hook-demo/use-watermark.vue"),
-  //       name: "UseWatermark",
-  //       meta: {
-  //         title: "useWatermark"
+  //         title: "工具列表",
+  //         keepAlive: true
   //       }
   //     }
   //   ]
