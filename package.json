@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "2.3.1",
+    "@tinymce/tinymce-vue": "5.1.1",
     "axios": "1.7.7",
     "dayjs": "1.11.13",
     "element-plus": "2.8.4",
@@ -40,6 +41,7 @@
     "pinia": "2.2.4",
     "pinia-plugin-persistedstate": "4.1.1",
     "screenfull": "6.0.2",
+    "tinymce": "7.4.1",
     "vue": "3.5.11",
     "vue-router": "4.4.5",
     "vxe-table": "4.6.21",

@@ -381,26 +381,27 @@ onMounted(() => {
         <el-button type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
       </template>
     </el-dialog>
-  </div>
 
-  <!-- 图标选择对话框 -->
-  <el-dialog
-    v-model="iconVisible"
-    title="选择图标"
-    width="60%"
-  >
-    <div class="icon-list">
-      <div
-        v-for="icon in icons"
-        :key="icon.name"
-        class="icon-item"
-        @click="handleSelectIcon(icon.name)"
-      >
-        <component :is="icon.component" />
-        <span class="icon-name">{{ icon.name }}</span>
+
+    <!-- 图标选择对话框 -->
+    <el-dialog
+      v-model="iconVisible"
+      title="选择图标"
+      width="60%"
+    >
+      <div class="icon-list">
+        <div
+          v-for="icon in icons"
+          :key="icon.name"
+          class="icon-item"
+          @click="handleSelectIcon(icon.name)"
+        >
+          <component :is="icon.component" />
+          <span class="icon-name">{{ icon.name }}</span>
+        </div>
       </div>
-    </div>
-  </el-dialog>
+    </el-dialog>
+  </div>
 </template>
 
 <style lang="scss" scoped>

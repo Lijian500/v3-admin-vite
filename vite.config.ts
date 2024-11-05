@@ -19,6 +19,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       alias: {
         /** @ 符号指向 src 目录 */
         "@": resolve(__dirname, "./src")
+        // ,'@tinymce/tinymce-vue': '@tinymce/tinymce-vue/dist/tinymce-vue.es2022.js'
       }
     },
     server: {
@@ -46,7 +47,14 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
         clientFiles: ["./src/layouts/**/*.vue"]
       }
     },
+    optimizeDeps: {
+      include: ['@tinymce/tinymce-vue', 'tinymce']
+    },
     build: {
+      // 防止 vite 将 tinymce 打包成 esm 模块
+      commonjsOptions: {
+        include: [/tinymce/]
+      },
       /** 单个 chunk 文件的大小超过 2048KB 时发出警告 */
       chunkSizeWarningLimit: 2048,
       /** 禁用 gzip 压缩大小报告 */

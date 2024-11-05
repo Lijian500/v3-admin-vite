@@ -11,6 +11,7 @@ import { ElMessage } from "element-plus"
 import type { FormInstance, FormRules } from "element-plus"
 // import { ArrowLeft, ThumbsUp } from "@element-plus/icons-vue"
 import { ArrowLeft} from "@element-plus/icons-vue"
+import TinymceEditor from '@/components/TinymceEditor/index.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -53,7 +54,13 @@ const formData = ref({
   state: 1,
   sort: 0,
   score: 0,
-  likeNum: 0
+  likeNum: 0,
+  createUser: "",
+  createUserId: "",
+  updateUser: "",
+  updateUserId: "",
+  createTime: "",
+  updateTime: ""
 })
 
 const formRules: FormRules = {
@@ -218,19 +225,17 @@ const toolState = [
         </el-form-item>
 
         <el-form-item prop="exampleEffect" label="示例效果">
-          <el-input
+          <TinymceEditor
             v-model="formData.exampleEffect"
-            type="textarea"
-            :rows="3"
+            :disabled="readonly"
             placeholder="请输入示例效果"
           />
         </el-form-item>
 
         <el-form-item prop="operatingDes" label="操作说明">
-          <el-input
+          <TinymceEditor
             v-model="formData.operatingDes"
-            type="textarea"
-            :rows="3"
+            :disabled="readonly"
             placeholder="请输入操作说明"
           />
         </el-form-item>
