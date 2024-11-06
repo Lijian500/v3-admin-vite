@@ -2,6 +2,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import Editor from '@tinymce/tinymce-vue'
 import tinymce from 'tinymce/tinymce'
+import ObsClient from 'esdk-obs-browserjs'
 
 // 引入主题和图标
 import 'tinymce/themes/silver'
@@ -26,8 +27,24 @@ import 'tinymce/plugins/fullscreen'
 import 'tinymce/plugins/insertdatetime'
 import 'tinymce/plugins/media'
 import 'tinymce/plugins/table'
-// import 'tinymce/plugins/help'
 import 'tinymce/plugins/wordcount'
+import {stringify} from "path-to-regexp";
+
+// OBS 配置
+const obsConfig = {
+  access_key_id: '0RWW0KKQFW6HSJMNNPH4', // 替换为您的 access key
+  secret_access_key: 'iy7IaqCDPEHw6dooe9D6zKryeInyuVSZ5GLvSPTa', // 替换为您的 secret key
+  server: 'obs.cn-north-4.myhuaweicloud.com', // 替换为您的 OBS 服务器地址，例如：'https://obs.cn-north-4.myhuaweicloud.com'
+  bucket: 'tb-train-dev', // 替换为您的 bucket 名称
+  prefix: 'RichEditor/' // 文件存储的前缀路径
+}
+
+// 初始化 OBS 客户端
+const obsClient = new ObsClient({
+  access_key_id: obsConfig.access_key_id,
+  secret_access_key: obsConfig.secret_access_key,
+  server: obsConfig.server
+})
 
 const props = defineProps({
   modelValue: {
@@ -48,11 +65,48 @@ const props = defineProps({
   },
   toolbarMode: {
     type: String,
-    default: 'full' // 可选值：'full' | 'simple'
+    default: 'full'
   }
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+// 获取文件扩展名
+const getFileExtension = (filename: string): string => {
+  return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2)
+}
+
+// 生成唯一文件名
+const generateUniqueFilename = (originalFilename: string): string => {
+  const ext = getFileExtension(originalFilename)
+  const timestamp = Date.now()
+  const random = Math.floor(Math.random() * 1000)
+  return `${timestamp}-${random}.${ext}`
+}
+
+// 上传文件到华为云 OBS
+const uploadToOBS = async (file: File): Promise<string> => {
+  const uniqueFilename = generateUniqueFilename(file.name)
+  const objectKey = `${obsConfig.prefix}${uniqueFilename}`
+
+  try {
+    const result = await obsClient.putObject({
+      Bucket: obsConfig.bucket,
+      Key: objectKey,
+      Body: file
+    })
+
+    if (result.CommonMsg.Status === 200) {
+      // 返回文件的访问URL
+      return `https://${obsConfig.bucket}.${obsConfig.server}/${objectKey}`
+    } else {
+      throw new Error('Upload failed')
+    }
+  } catch (error) {
+    console.error('OBS upload error:', error)
+    throw error
+  }
+}
 
 // 定义工具栏配置
 const getToolbarConfig = (mode: string) => {
@@ -67,28 +121,6 @@ const getToolbarConfig = (mode: string) => {
     'fullscreen preview code | help'
 
   return mode === 'simple' ? simple : full
-}
-
-// 模拟上传图片的API - 实际使用时替换为你的真实上传API
-const uploadImage = async (file: File): Promise<string> => {
-  // 这里替换为你的实际上传逻辑
-  return new Promise((resolve, reject) => {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    // 示例：使用 fetch 上传
-    fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => response.json())
-      .then(data => {
-        resolve(data.url)
-      })
-      .catch(error => {
-        reject(error)
-      })
-  })
 }
 
 // TinyMCE 初始化配置
@@ -110,14 +142,14 @@ const init = {
   content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
   branding: false,
   promotion: false,
-  // readonly: props.disabled,
   base_url: '/tinymce',
 
   // 图片上传配置
   images_upload_handler: async (blobInfo: any, progress: any) => {
     try {
       const file = blobInfo.blob()
-      const url = await uploadImage(file)
+      const url = await uploadToOBS(file)
+      console.log("上传返回url: " + url)
       return url
     } catch (error) {
       console.error('Upload failed:', error)
@@ -137,7 +169,8 @@ const init = {
       if (!file) return
 
       try {
-        const url = await uploadImage(file)
+        const url = await uploadToOBS(file)
+        console.log("选择callback: " + url)
         callback(url, { title: file.name })
       } catch (error) {
         console.error('Upload failed:', error)
@@ -147,7 +180,6 @@ const init = {
     input.click()
   },
 
-  // 配置
   block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Heading 5=h5; Heading 6=h6;',
   fontsize_formats: '12px 14px 16px 18px 24px 36px 48px',
 

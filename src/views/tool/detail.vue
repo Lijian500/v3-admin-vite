@@ -182,38 +182,38 @@ const toolState = [
               <el-input v-model="formData.instrumentIcon" placeholder="请输入图标链接"/>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item prop="state" label="状态">
-              <el-select v-model="formData.state" placeholder="请选择状态">
-                <el-option
-                  v-for="item in toolState"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
+<!--          <el-col :span="12">-->
+<!--            <el-form-item prop="state" label="状态">-->
+<!--              <el-select v-model="formData.state" placeholder="请选择状态">-->
+<!--                <el-option-->
+<!--                  v-for="item in toolState"-->
+<!--                  :key="item.value"-->
+<!--                  :label="item.label"-->
+<!--                  :value="item.value"-->
+<!--                />-->
+<!--              </el-select>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
         </el-row>
 
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item prop="sort" label="排序">
-              <el-input-number v-model="formData.sort" :min="0" placeholder="请输入排序号"/>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item prop="score" label="评分">
-              <el-input-number
-                v-model="formData.score"
-                :min="0"
-                :max="5"
-                :step="0.5"
-                placeholder="请输入评分"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+<!--        <el-row :gutter="20">-->
+<!--          <el-col :span="12">-->
+<!--            <el-form-item prop="sort" label="排序">-->
+<!--              <el-input-number v-model="formData.sort" :min="0" placeholder="请输入排序号"/>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
+<!--          <el-col :span="12">-->
+<!--            <el-form-item prop="score" label="评分">-->
+<!--              <el-input-number-->
+<!--                v-model="formData.score"-->
+<!--                :min="0"-->
+<!--                :max="5"-->
+<!--                :step="0.5"-->
+<!--                placeholder="请输入评分"-->
+<!--              />-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
+<!--        </el-row>-->
 
         <el-form-item prop="instrumentDes" label="工具描述">
           <el-input
@@ -227,7 +227,6 @@ const toolState = [
         <el-form-item prop="exampleEffect" label="示例效果">
           <TinymceEditor
             v-model="formData.exampleEffect"
-            :disabled="readonly"
             placeholder="请输入示例效果"
           />
         </el-form-item>
@@ -235,7 +234,6 @@ const toolState = [
         <el-form-item prop="operatingDes" label="操作说明">
           <TinymceEditor
             v-model="formData.operatingDes"
-            :disabled="readonly"
             placeholder="请输入操作说明"
           />
         </el-form-item>
