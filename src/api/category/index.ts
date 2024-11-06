@@ -70,4 +70,12 @@ export function resetPasswordApi(id: number) {
   })
 }
 
+/** 分类树 */
+export function getCategoryTreeApi() {
+  return request({
+    url: "/category/tree",
+    method: "get"
+  })
+}
+
 

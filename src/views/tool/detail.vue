@@ -51,9 +51,9 @@ const formData = ref({
   exampleEffect: "",
   operatingDes: "",
   suggestDes: "",
-  state: 1,
+  // state: 1,
   sort: 0,
-  score: 0,
+  // score: 0,
   likeNum: 0,
   createUser: "",
   createUserId: "",
@@ -243,6 +243,7 @@ const toolState = [
             v-model="formData.suggestDes"
             type="textarea"
             :rows="3"
+            :maxlength="200"
             placeholder="请输入使用建议"
           />
         </el-form-item>

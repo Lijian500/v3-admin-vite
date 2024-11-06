@@ -21,4 +21,4 @@ export type LoginCodeResponseData = ApiResponseData<string>
 // export type LoginResponseData = ApiResponseData<{ token: string, id: number, userId: string }>
 export type LoginResponseData = ApiResponseData<ILoginUser>
 
-export type UserInfoResponseData = ApiResponseData<{ id: number, userId: string, account: string; roles: string[]; identity: number; }>
+export type UserInfoResponseData = ApiResponseData<{ id: number, userId: string, account: string; roles: string[]; identity: number; realName: string }>
