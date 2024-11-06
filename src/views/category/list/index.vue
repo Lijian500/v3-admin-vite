@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {nextTick, onMounted, reactive, ref, watch} from "vue"
+import { nextTick, onMounted, reactive, ref, watch } from "vue"
 import {
   createCategoryApi,
   deleteCategoryApi,
@@ -10,11 +10,12 @@ import {
   getCategoryTreeApi
 } from "@/api/category/index.ts"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import * as ElementPlusIconsVue from "@element-plus/icons-vue"
 import { Search, Refresh, CirclePlus, Delete, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { cloneDeep } from "lodash-es"
 import { useUserStoreHook } from "@/store/modules/user"
+import { uploadToOBS } from "@/utils/uploadService"
 
 defineOptions({
   name: "CategoryManagement"
@@ -52,8 +53,7 @@ const categoryState = [
   { label: "无效", value: 4 }
 ]
 
-const cascaderRef = ref();
-
+const cascaderRef = ref()
 
 //#region 增
 const DEFAULT_FORM_DATA = {
@@ -108,16 +108,15 @@ const handleDialogOpen = async () => {
     if (formData.value.id !== undefined && formData.value.parentId) {
       // 这里可能需要根据实际数据结构处理父级ID的路径
       await nextTick() // 等待DOM更新
-      formRef.value?.validateField('parentId')
+      formRef.value?.validateField("parentId")
     }
   } catch (error) {
-    console.error('加载分类树失败：', error)
-    ElMessage.error('加载分类树失败')
+    console.error("加载分类树失败：", error)
+    ElMessage.error("加载分类树失败")
   } finally {
     loading.value = false
   }
 }
-
 
 const resetForm = () => {
   formRef.value?.clearValidate()
@@ -149,7 +148,7 @@ const handleSelectionChange = (val) => {
 
 const deleteSelected = () => {
   if (selectedRows.value.length === 0) {
-    ElMessage('请先选择要删除的项')
+    ElMessage("请先选择要删除的项")
     return
   }
 
@@ -158,11 +157,10 @@ const deleteSelected = () => {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    deleteBatchApi({ ids: selectedRows.value.map(item => item.id) })
-      .then(() => {
-        ElMessage.success('删除成功')
-        getCategoryData()
-      })
+    deleteBatchApi({ ids: selectedRows.value.map((item) => item.id) }).then(() => {
+      ElMessage.success("删除成功")
+      getCategoryData()
+    })
   })
 }
 //#endregion
@@ -176,25 +174,23 @@ const handleUpdate = (row) => {
 
 //#region 启用停用
 const handleCategoryState = (row) => {
-  const actionText = row.state === 1 || row.state === 3? "启用" : "停用"
+  const actionText = row.state === 1 || row.state === 3 ? "启用" : "停用"
   if (row.state === 1 || row.state === 3) {
     ElMessageBox.confirm(`正在${actionText}分类：${row.categoryName}，确认${actionText}？`, "提示", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning"
     }).then(() => {
-      updateCategoryStateApi({ categoryId: row.categoryId, state: 2 })
-        .then(() => {
-          ElMessage.success(`${actionText}成功`)
-          getCategoryData()
-        })
-    })
-  } else {
-    updateCategoryStateApi({ categoryId: row.categoryId, state: 3 })
-      .then(() => {
+      updateCategoryStateApi({ categoryId: row.categoryId, state: 2 }).then(() => {
         ElMessage.success(`${actionText}成功`)
         getCategoryData()
       })
+    })
+  } else {
+    updateCategoryStateApi({ categoryId: row.categoryId, state: 3 }).then(() => {
+      ElMessage.success(`${actionText}成功`)
+      getCategoryData()
+    })
   }
 }
 //#endregion
@@ -219,9 +215,9 @@ const getCategoryData = () => {
     categoryName: searchData.categoryName || undefined,
     state: searchData.state || undefined,
     createStartTime: startTime || undefined,
-    createEndTime: endTime || undefined,
+    createEndTime: endTime || undefined
   })
-    .then(res => {
+    .then((res) => {
       paginationData.total = res.total
       tableData.value = res.data
     })
@@ -254,21 +250,42 @@ const openDialog = (row) => {
 
 const handleChange = (value: any) => {
   if (!value) {
-    formData.value.parentId = null;
-    formData.value.parentName = null;
-    return;
+    formData.value.parentId = null
+    formData.value.parentName = null
+    return
   }
 
   // 通过 ref 获取选中节点
-  const selectedNodes = cascaderRef.value.getCheckedNodes();
+  const selectedNodes = cascaderRef.value.getCheckedNodes()
   if (selectedNodes && selectedNodes.length > 0) {
-    const node = selectedNodes[0];
-    formData.value.parentId = node.data.categoryId;
-    formData.value.parentName = node.data.categoryName;
-    console.log('选中的值:', node.data.categoryId);
-    console.log('选中的标签:', node.data.categoryName);
+    const node = selectedNodes[0]
+    formData.value.parentId = node.data.categoryId
+    formData.value.parentName = node.data.categoryName
+    console.log("选中的值:", node.data.categoryId)
+    console.log("选中的标签:", node.data.categoryName)
   }
-};
+}
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+
+const uploadSubmit = async (options: any) => {
+  const { file, onSuccess, onError } = options
+
+  if (file.size > MAX_FILE_SIZE) {
+    onError(new Error("文件大小超过限制，请上传小于5MB的图片"))
+    return
+  }
+  console.log(file)
+
+  try {
+    const url = await uploadToOBS(file)
+    formData.value.icon = url
+  } catch (error) {
+    onError(error)
+    console.error("文件上传失败:", error)
+    ElMessage.error("图片上传失败: " + error.message)
+  }
+}
 
 /** 监听分页参数的变化 */
 watch([() => paginationData.pageNo, () => paginationData.pageSize], getCategoryData, { immediate: true })
@@ -288,12 +305,7 @@ onMounted(() => {
         </el-form-item>
         <el-form-item prop="state" label="状态">
           <el-select v-model="searchData.state" clearable style="width: 100px" placeholder="请选择状态">
-            <el-option
-              v-for="state in categoryState"
-              :key="state.value"
-              :label="state.label"
-              :value="state.value"
-            />
+            <el-option v-for="state in categoryState" :key="state.value" :label="state.label" :value="state.value" />
           </el-select>
         </el-form-item>
         <el-form-item prop="dataTime" label="创建时间">
@@ -317,7 +329,7 @@ onMounted(() => {
       <div class="toolbar-wrapper">
         <div>
           <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增分类</el-button>
-<!--          <el-button type="danger" :icon="Delete" @click="deleteSelected">批量删除</el-button>-->
+          <!--          <el-button type="danger" :icon="Delete" @click="deleteSelected">批量删除</el-button>-->
         </div>
         <div>
           <el-tooltip content="刷新当前页">
@@ -333,13 +345,13 @@ onMounted(() => {
           <el-table-column prop="categoryName" label="分类名称" align="center" />
           <el-table-column prop="parentName" label="父级分类" align="center">
             <template #default="scope">
-              {{ scope.row.parentName || '-' }}
+              {{ scope.row.parentName || "-" }}
             </template>
           </el-table-column>
           <el-table-column prop="sort" label="排序" width="80" align="center" />
           <el-table-column prop="icon" label="图标" align="center">
             <template #default="scope">
-              <i :class="scope.row.icon"></i>
+              <i :class="scope.row.icon" />
             </template>
           </el-table-column>
           <el-table-column prop="state" label="状态" align="center">
@@ -353,18 +365,40 @@ onMounted(() => {
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" align="center">
             <template #default="scope">
-              {{ scope.row.createTime || '-' }}
+              {{ scope.row.createTime || "-" }}
             </template>
           </el-table-column>
           <el-table-column fixed="right" label="操作" width="180" align="center">
             <template #default="scope">
               <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">详情</el-button>
-              <el-button v-if="scope.row.state === 1" type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
-              <el-button v-if="scope.row.state !== 4" :type="scope.row.state === 1 || scope.row.state === 3 ? 'success' : 'danger'" text bg size="small"
-                         @click="handleCategoryState(scope.row)">
-                {{ scope.row.state === 1 || scope.row.state === 3 ? '启用' : '停用' }}
+              <el-button
+                v-if="scope.row.state === 1"
+                type="primary"
+                text
+                bg
+                size="small"
+                @click="handleUpdate(scope.row)"
+                >修改</el-button
+              >
+              <el-button
+                v-if="scope.row.state !== 4"
+                :type="scope.row.state === 1 || scope.row.state === 3 ? 'success' : 'danger'"
+                text
+                bg
+                size="small"
+                @click="handleCategoryState(scope.row)"
+              >
+                {{ scope.row.state === 1 || scope.row.state === 3 ? "启用" : "停用" }}
               </el-button>
-              <el-button v-if="scope.row.state === 1 || scope.row.state === 3" type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button
+                v-if="scope.row.state === 1 || scope.row.state === 3"
+                type="danger"
+                text
+                bg
+                size="small"
+                @click="handleDelete(scope.row)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -411,24 +445,17 @@ onMounted(() => {
           />
         </el-form-item>
         <el-form-item prop="icon" label="图标">
-          <div class="icon-select">
-            <el-input
-              v-model="formData.icon"
-              placeholder="请选择图标"
-              readonly
-              @click="iconVisible = true"
-            >
-              <template #append>
-                <el-button @click="iconVisible = true">
-                  <component
-                    v-if="formData.icon"
-                    :is="formData.icon"
-                  />
-                  <span v-else>选择</span>
-                </el-button>
-              </template>
-            </el-input>
-          </div>
+          <el-upload
+            v-model="formData.icon"
+            :http-request="uploadSubmit"
+            list-type="picture-card"
+            :limit="1"
+            show-file-list
+          >
+            <el-icon>
+              <Plus />
+            </el-icon>
+          </el-upload>
         </el-form-item>
         <el-form-item prop="sort" label="排序">
           <el-input-number v-model="formData.sort" :min="0" placeholder="请输入排序号" />
@@ -438,26 +465,6 @@ onMounted(() => {
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
       </template>
-    </el-dialog>
-
-
-    <!-- 图标选择对话框 -->
-    <el-dialog
-      v-model="iconVisible"
-      title="选择图标"
-      width="60%"
-    >
-      <div class="icon-list">
-        <div
-          v-for="icon in icons"
-          :key="icon.name"
-          class="icon-item"
-          @click="handleSelectIcon(icon.name)"
-        >
-          <component :is="icon.component" />
-          <span class="icon-name">{{ icon.name }}</span>
-        </div>
-      </div>
     </el-dialog>
   </div>
 </template>
@@ -527,5 +534,32 @@ onMounted(() => {
       padding: 0 12px;
     }
   }
+}
+
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
 }
 </style>
