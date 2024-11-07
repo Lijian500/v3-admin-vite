@@ -2,16 +2,16 @@
 import { nextTick, onMounted, reactive, ref, watch } from "vue"
 import {
   createCategoryApi,
-  deleteCategoryApi,
-  updateCategoryApi,
-  getCategoryListApi,
   deleteBatchApi,
-  updateCategoryStateApi,
-  getCategoryTreeApi
+  deleteCategoryApi,
+  getCategoryListApi,
+  getCategoryTreeApi,
+  updateCategoryApi,
+  updateCategoryStateApi
 } from "@/api/category/index.ts"
-import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus"
 import * as ElementPlusIconsVue from "@element-plus/icons-vue"
-import { Search, Refresh, CirclePlus, Delete, RefreshRight } from "@element-plus/icons-vue"
+import { CirclePlus, Refresh, RefreshRight, Search } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { cloneDeep } from "lodash-es"
 import { useUserStoreHook } from "@/store/modules/user"
@@ -71,6 +71,7 @@ const DEFAULT_FORM_DATA = {
 }
 
 const dialogVisible = ref<boolean>(false)
+const formDetailBut = ref<boolean>(false)
 const formRef = ref<FormInstance | null>(null)
 const formData = ref(cloneDeep(DEFAULT_FORM_DATA))
 
@@ -110,6 +111,8 @@ const handleDialogOpen = async () => {
       await nextTick() // 等待DOM更新
       formRef.value?.validateField("parentId")
     }
+
+    // 如果是详情方式打开，则所有选项都不能编辑
   } catch (error) {
     console.error("加载分类树失败：", error)
     ElMessage.error("加载分类树失败")
@@ -119,6 +122,8 @@ const handleDialogOpen = async () => {
 }
 
 const resetForm = () => {
+  formDetailBut.value = false
+  formData.value.icon = ""
   formRef.value?.clearValidate()
   formData.value = cloneDeep(DEFAULT_FORM_DATA)
 }
@@ -166,14 +171,14 @@ const deleteSelected = () => {
 //#endregion
 
 //#region 改
-const handleUpdate = (row) => {
+const handleUpdate = (row: any) => {
   dialogVisible.value = true
   formData.value = cloneDeep(row)
 }
 //#endregion
 
 //#region 启用停用
-const handleCategoryState = (row) => {
+const handleCategoryState = (row: any) => {
   const actionText = row.state === 1 || row.state === 3 ? "启用" : "停用"
   if (row.state === 1 || row.state === 3) {
     ElMessageBox.confirm(`正在${actionText}分类：${row.categoryName}，确认${actionText}？`, "提示", {
@@ -239,14 +244,16 @@ const resetSearch = () => {
 }
 //#endregion
 
-// 打开对话框方法（供外部调用）
-const openDialog = (row) => {
-  if (row) {
-    // 修改操作
-    Object.assign(formData, row)
-  }
-  dialogVisible.value = true
+//region 列表上图片预览
+const previewImage = ref<string>("")
+const previewVisible = ref<boolean>(false)
+
+const showPreview = (imageUrl: string) => {
+  previewImage.value = imageUrl
+  previewVisible.value = true
 }
+
+//endregion
 
 const handleChange = (value: any) => {
   if (!value) {
@@ -275,12 +282,14 @@ const uploadSubmit = async (options: any) => {
     onError(new Error("文件大小超过限制，请上传小于5MB的图片"))
     return
   }
-  console.log(file)
+  if (file.type !== "image/jpeg") {
+    onError(new Error("Avatar picture must be JPG format!"))
+    return
+  }
 
   try {
-    const url = await uploadToOBS(file)
-    formData.value.icon = url
-  } catch (error) {
+    formData.value.icon = await uploadToOBS(file)
+  } catch (error: any) {
     onError(error)
     console.error("文件上传失败:", error)
     ElMessage.error("图片上传失败: " + error.message)
@@ -351,7 +360,14 @@ onMounted(() => {
           <el-table-column prop="sort" label="排序" width="80" align="center" />
           <el-table-column prop="icon" label="图标" align="center">
             <template #default="scope">
-              <i :class="scope.row.icon" />
+              <img
+                v-if="scope.row.icon"
+                :src="scope.row.icon"
+                alt="图标"
+                class="icon-image"
+                @click="showPreview(scope.row.icon)"
+              />
+              <span v-else>-</span>
             </template>
           </el-table-column>
           <el-table-column prop="state" label="状态" align="center">
@@ -370,7 +386,17 @@ onMounted(() => {
           </el-table-column>
           <el-table-column fixed="right" label="操作" width="180" align="center">
             <template #default="scope">
-              <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">详情</el-button>
+              <el-button
+                type="primary"
+                text
+                bg
+                size="small"
+                @click="
+                  handleUpdate(scope.row),
+                  formDetailBut = true
+                "
+                >详情</el-button
+              >
               <el-button
                 v-if="scope.row.state === 1"
                 type="primary"
@@ -378,8 +404,8 @@ onMounted(() => {
                 bg
                 size="small"
                 @click="handleUpdate(scope.row)"
-                >修改</el-button
-              >
+                >修改
+              </el-button>
               <el-button
                 v-if="scope.row.state !== 4"
                 :type="scope.row.state === 1 || scope.row.state === 3 ? 'success' : 'danger'"
@@ -397,8 +423,8 @@ onMounted(() => {
                 bg
                 size="small"
                 @click="handleDelete(scope.row)"
-                >删除</el-button
-              >
+                >删除
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -416,15 +442,22 @@ onMounted(() => {
         />
       </div>
     </el-card>
-    <!-- 新增/修改 -->
+    <!-- 新增/修改/详情 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="formData.id === undefined ? '新增分类' : '修改分类'"
+      :title="formData.id === undefined ? '新增分类' : formDetailBut ? '详情' : '修改分类'"
       @closed="resetForm"
       @open="handleDialogOpen"
       width="30%"
     >
-      <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
+      <el-form
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="100px"
+        label-position="left"
+        :disabled="formDetailBut"
+      >
         <el-form-item prop="categoryName" label="分类名称">
           <el-input v-model="formData.categoryName" placeholder="请输入分类名称" />
         </el-form-item>
@@ -440,6 +473,8 @@ onMounted(() => {
               checkStrictly: true
             }"
             clearable
+            filterable
+            :show-all-levels="false"
             placeholder="请选择父级分类"
             @change="handleChange"
           />
@@ -462,9 +497,14 @@ onMounted(() => {
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
+        <el-button v-if="!formDetailBut" @click="dialogVisible = false">取消</el-button>
+        <el-button v-if="!formDetailBut" type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
       </template>
+    </el-dialog>
+
+    <!-- 图片预览对话框 -->
+    <el-dialog v-model="previewVisible" @click="previewVisible = false" width="50%">
+      <img :src="previewImage" alt="预览" style="width: 100%; height: auto" />
     </el-dialog>
   </div>
 </template>
@@ -561,5 +601,11 @@ onMounted(() => {
   width: 178px;
   height: 178px;
   text-align: center;
+}
+
+.icon-image {
+  width: 80px; /* 根据需要调整图片大小 */
+  height: 50px; /* 根据需要调整图片大小 */
+  object-fit: cover; /* 保持图片比例 */
 }
 </style>

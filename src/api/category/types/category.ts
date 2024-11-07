@@ -1,21 +1,21 @@
-
 export interface CreateCategoryRequest {
   /** 分类id */
-  categoryId: string;
+  categoryId: string
   /** 分类名称 */
-  categoryName: string;
+  categoryName: string
   /** 分类图标 */
-  icon: string;
+  icon: string
   /** 父id */
-  parentId?: string;
+  parentId?: string
   /** 上级分类名称 */
-  parentName?: string;
+  parentName?: string
   /** 排序 */
-  sort: number;
+  sort: number
   /** 分类的状态 1 草稿 2启用 3停用 4无效 */
-  state: number;
+  state: number
 }
 
+export type CategoryStateUpdate = Pick<CreateCategoryRequest, "categoryId" | "state">
 
 export interface TableRequestData {
   /** 当前页码 */
@@ -28,7 +28,8 @@ export interface TableRequestData {
   realName?: string
   createStartTime?: string
   createEndTime?: string
-  userState?: number
+  state?: number
+  categoryName?: string
 }
 
 export interface TableData {
@@ -48,8 +49,6 @@ export interface TableData {
   updateUser: string
   updateUserId: string
 }
-
-
 
 export type TableResponseData = ApiResponseData<{
   list: TableData[]

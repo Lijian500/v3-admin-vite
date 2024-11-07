@@ -1,5 +1,6 @@
 import { request } from "@/utils/service"
-import type * as Category from "./types/category";
+import type * as Category from "./types/category"
+import {CategoryStateUpdate} from "./types/category";
 
 /** 增 */
 export function createCategoryApi(data: Category.CreateCategoryRequest) {
@@ -54,12 +55,12 @@ export function getUserOneApi(id: number) {
 }
 
 /** 启用禁用 */
-export function updateCategoryStateApi(data: Category.CreateCategoryRequest) {
-    return request({
-      url: "/category/update/state",
-      method: "put",
-      data
-    })
+export function updateCategoryStateApi(data: Category.CategoryStateUpdate) {
+  return request({
+    url: "/category/update/state",
+    method: "put",
+    data
+  })
 }
 
 /** 重置密码 */
@@ -77,5 +78,3 @@ export function getCategoryTreeApi() {
     method: "get"
   })
 }
-
-
