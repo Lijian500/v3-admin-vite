@@ -9,7 +9,7 @@ import {
   updateCategoryApi,
   updateCategoryStateApi
 } from "@/api/category/index.ts"
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus"
+import {ElMessage, ElMessageBox, type FormInstance, type FormRules, UploadProps} from "element-plus"
 import * as ElementPlusIconsVue from "@element-plus/icons-vue"
 import { CirclePlus, Refresh, RefreshRight, Search } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
@@ -296,6 +296,11 @@ const uploadSubmit = async (options: any) => {
   }
 }
 
+const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
+  previewImage.value = uploadFile.url!
+  previewVisible.value = true
+}
+
 /** 监听分页参数的变化 */
 watch([() => paginationData.pageNo, () => paginationData.pageSize], getCategoryData, { immediate: true })
 
@@ -486,6 +491,7 @@ onMounted(() => {
             list-type="picture-card"
             :limit="1"
             show-file-list
+            :on-preview="handlePictureCardPreview"
           >
             <el-icon>
               <Plus />
