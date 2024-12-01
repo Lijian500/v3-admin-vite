@@ -10,6 +10,14 @@ const Layouts = () => import("@/layouts/index.vue")
  */
 export const constantRoutes: RouteRecordRaw[] = [
   {
+    path: "/",
+    name: "home",
+    component: () => import("@/views/home/index.vue"),
+    meta: {
+      hidden: true
+    }
+  },
+  {
     path: "/redirect",
     component: Layouts,
     meta: {
@@ -44,23 +52,23 @@ export const constantRoutes: RouteRecordRaw[] = [
       hidden: true
     }
   },
-  {
-    path: "/",
-    component: Layouts,
-    redirect: "/dashboard",
-    children: [
-      {
-        path: "dashboard",
-        component: () => import("@/views/dashboard/index.vue"),
-        name: "Dashboard",
-        meta: {
-          title: "首页",
-          svgIcon: "dashboard",
-          affix: true
-        }
-      }
-    ]
-  },
+  // {
+  //   path: "/dashboard",
+  //   component: Layouts,
+  //   redirect: "/dashboard",
+  //   children: [
+  //     {
+  //       path: "dashboard",
+  //       component: () => import("@/views/dashboard/index.vue"),
+  //       name: "Dashboard",
+  //       meta: {
+  //         title: "首页",
+  //         svgIcon: "dashboard",
+  //         affix: true
+  //       }
+  //     }
+  //   ]
+  // },
   {
     path: "/table",
     component: Layouts,
